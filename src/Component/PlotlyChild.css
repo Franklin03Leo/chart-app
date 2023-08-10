@@ -1,0 +1,11 @@
+input[type="color"] {
+  height: 41px !important;
+  width: 41px !important;
+  border: 5px solid #e9e1e1;
+  border-radius: 6px;
+  height: 46px;
+  padding: 0;
+  width: 46px;
+}
+
+
