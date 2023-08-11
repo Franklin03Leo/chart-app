@@ -4,15 +4,6 @@ import Plotly from "plotly.js";
 // change to react plotly
 import Plot from "react-plotly.js";
 
-//mui table
-import TableContainer from "@mui/material/TableContainer";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-
 //mui data table
 import MUIDataTable from "mui-datatables";
 
@@ -106,9 +97,8 @@ const PlotlyChild = ({
   }, [chartData, chartType, chartCustomize]);
 
 
-  const cols = Object.keys(chartData['allValues']?.[0])?.map((e) => ({ ["name"]: e }));
+  const row = Object.keys(chartData['allValues']?.[0])?.map((e) => ({ ["name"]: e }));
   const options = {
-    // filter: `${filter === false ? false : true}`,
     filterType: "multiselect",
     responsive: "scroll",
     selectableRows: false,
@@ -122,35 +112,12 @@ const PlotlyChild = ({
 
       {showChart && <Plot data={chartDataValues.data} layout={chartDataValues.layout} />}
 
-      {/* {showTable && (
-      <TableContainer component={Paper} style={{ margin: "20px", padding: "10px" }}>
-      <Table aria-label="uploaded-file-details">
-        <TableHead>
-          <TableRow>
-            {chartData['allValues']?.[0]?.map((cell, index) => (
-              <TableCell key={index}>{cell}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {chartData['allValues']?.slice(1)?.map((row, rowIndex) => (
-            <TableRow key={rowIndex}>
-              {row.map((cell, cellIndex) => (
-                <TableCell key={cellIndex}>{cell}</TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      </TableContainer>
-      )} */}
-
       {showTable && <div style={{ height: "calc(100vh - 165px)" }}>
         <MUIDataTable
           id="dataset"
           title={"Dataset"}
           data={chartData['allValues']}
-          columns={cols}
+          columns={row}
           options={options}
         />
       </div>}

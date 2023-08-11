@@ -25,8 +25,6 @@ import * as XLSX from "xlsx";
 import PlotlyChild from "./Component/PlotlyChild";
 
 const Plotly_input = ({ data, onChartUpdate }) => {
-  console.log(` ${data} has get`);
-
   const [showChart, setShowChart] = useState(false);
   const [chartData, setChartData] = useState({
     allValues: [],
@@ -68,8 +66,6 @@ const Plotly_input = ({ data, onChartUpdate }) => {
   });
   const [expanded, setExpanded] = React.useState(false);
   const [chartType, setChartType] = useState("bar"); // Added chartType and setChartType
-  const [uploadedFileName, setUploadedFileName] = useState("");
-  const [uploadedFileType, setUploadedFileType] = useState("");
   const [showTable, setShowTable] = useState(false);
 
   const handleShowChart = () => {
@@ -146,8 +142,6 @@ const Plotly_input = ({ data, onChartUpdate }) => {
         });
         console.log(" xlsx ===> ", chartData);
       }
-      setUploadedFileName(file.name);
-      setUploadedFileType(file.type);
       e = "";
     };
     reader.readAsText(file);
@@ -527,7 +521,6 @@ const Plotly_input = ({ data, onChartUpdate }) => {
                       <TextField
                         label="Radius"
                         id="outlined-size-small"
-                        // defaultValue="12"
                         size="small"
                         name="yaxisRadious"
                         value={chartCustomize.yaxisRadious}
@@ -539,7 +532,6 @@ const Plotly_input = ({ data, onChartUpdate }) => {
                       <TextField
                         label="Font Size"
                         id="outlined-size-small"
-                        // defaultValue="12"
                         size="small"
                         name="yaxisFontSize"
                         value={chartCustomize.yaxisFontSize}
@@ -591,7 +583,7 @@ const Plotly_input = ({ data, onChartUpdate }) => {
           height: "100%",
           maxHeight: "100%",
           left: "34%",
-          right: '5px',
+          right: "5px",
           padding: "50px 0 0 0",
         }}
       >
