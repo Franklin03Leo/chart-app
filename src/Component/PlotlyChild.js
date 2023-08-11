@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Plotly from "plotly.js";
 
 // change to react plotly
-import Plot from 'react-plotly.js';
+import Plot from "react-plotly.js";
 
 //mui table
 import TableContainer from "@mui/material/TableContainer";
@@ -13,32 +13,43 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
-const PlotlyChild = ({ chartData, chartCustomize, chartType, showTable, showChart}) => {
+//mui data table
+import MUIDataTable from "mui-datatables";
 
-  useEffect(() => {
+const PlotlyChild = ({
+  chartData,
+  chartCustomize,
+  chartType,
+  showTable,
+  showChart,
+}) => {
+
+  const [chartDataValues , setChartDataValues] = useState({
+    data : [],
+    layout : {}
+  })
+
+  const updateChartData = () => {
     if (chartData) {
-
-        var trace1;
-        if (chartType === "bar") {
-          trace1 = {
-            x: chartData.labels,
-            y: chartData.values,
-            type: "bar", // define a type of the chart
-            marker: {
-              color: chartCustomize["chartColor"], // change the chart color
-            },
-          };
-        } else if (chartType === "pie") {
-          trace1 = {
-            labels: chartData.labels,
-            values: chartData.values,
-            type: "pie",
-          };
-        }
-
-      const data = [trace1];
-      var layout = {
-        
+      var trace1;
+      if (chartType === "bar") {
+        trace1 = {
+          x: chartData.labels,
+          y: chartData.values,
+          type: "bar", // define a type of the chart
+          marker: {
+            color: chartCustomize["chartColor"], // change the chart color
+          },
+        };
+      } else if (chartType === "pie") {
+        trace1 = {
+          labels: chartData.labels,
+          values: chartData.values,
+          type: "pie",
+        };
+      }
+      let data = [trace1];
+      let layout = {
         title: chartType === "bar" ? "Bar Chart" : "Pie Chart",
         width: chartCustomize["chartWidth"], // set the width of the chart
         height: chartCustomize["chartHeight"], // set the Height of the chart
@@ -48,12 +59,8 @@ const PlotlyChild = ({ chartData, chartCustomize, chartType, showTable, showChar
         // xaxis configs
         xaxis: {
           title: chartCustomize["xaxisTitle"],
-          orientation: 'h',
-          // type: 'category',
-          // tickformat: ',.2f',
+          orientation: "h",
           showgrid: true, // show the grid inside the chart
-          // zeroline: false,
-          // mirror: 'ticks',
           automargin: true,
           tickangle: chartCustomize["xaxisRadious"], // set the radious of the xaxis lagend
           tickfont: {
@@ -67,7 +74,6 @@ const PlotlyChild = ({ chartData, chartCustomize, chartType, showTable, showChar
         },
         // Yaxis configs
         yaxis: {
-          
           title: chartCustomize["yaxisTitle"],
           tickangle: chartCustomize["yaxisRadious"], // set the radious of the xaxis lagend
           automargin: true,
@@ -75,7 +81,6 @@ const PlotlyChild = ({ chartData, chartCustomize, chartType, showTable, showChar
             size: chartCustomize["yaxisFontSize"], // set xaxis the font size
             color: chartCustomize["yaxisColor"], // set xaxis font color
             family: chartCustomize["yaxisFontFamily"],
-            
           },
           standoff: 40,
         },
@@ -88,18 +93,35 @@ const PlotlyChild = ({ chartData, chartCustomize, chartType, showTable, showChar
         // }
       };
 
-      // Create the chart
-      // <Plot 
-      //   data= {data}
-      //   layout = {layout} 
-      // />
-      Plotly.newPlot("myDiv", data, layout);
+      setChartDataValues({
+        data: data,
+        layout : layout
+      })
+      // Plotly.newPlot("myDiv", data, layout);
     }
+  }
+
+  useEffect(() => {
+    updateChartData();
   }, [chartData, chartType, chartCustomize]);
+
+
+  const cols = Object.keys(chartData['allValues']?.[0])?.map((e) => ({ ["name"]: e }));
+  const options = {
+    // filter: `${filter === false ? false : true}`,
+    filterType: "multiselect",
+    responsive: "scroll",
+    selectableRows: false,
+    useDisplayedRowsOnly: true,
+    sort: false,
+  };
 
   return (
     <div>
-      {showChart && <div id="myDiv"></div>}
+      {/* {showChart && <div id="myDiv"></div>} */}
+
+      {showChart && <Plot data={chartDataValues.data} layout={chartDataValues.layout} />}
+
       {/* {showTable && (
       <TableContainer component={Paper} style={{ margin: "20px", padding: "10px" }}>
       <Table aria-label="uploaded-file-details">
@@ -122,6 +144,16 @@ const PlotlyChild = ({ chartData, chartCustomize, chartType, showTable, showChar
       </Table>
       </TableContainer>
       )} */}
+
+      {showTable && <div style={{ height: "calc(100vh - 165px)" }}>
+        <MUIDataTable
+          id="dataset"
+          title={"Dataset"}
+          data={chartData['allValues']}
+          columns={cols}
+          options={options}
+        />
+      </div>}
     </div>
   );
 };

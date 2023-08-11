@@ -24,7 +24,9 @@ import * as XLSX from "xlsx";
 //import child chart component
 import PlotlyChild from "./Component/PlotlyChild";
 
-const Plotly_input = () => {
+const Plotly_input = ({ data, onChartUpdate }) => {
+  console.log(` ${data} has get`);
+
   const [showChart, setShowChart] = useState(false);
   const [chartData, setChartData] = useState({
     allValues: [],
@@ -71,8 +73,14 @@ const Plotly_input = () => {
   const [showTable, setShowTable] = useState(false);
 
   const handleShowChart = () => {
+    onChartUpdate("test");
     setShowChart(true);
     setShowTable(false);
+  };
+
+  const handleShowTable = () => {
+    setShowTable(true);
+    setShowChart(false);
   };
 
   const handleChartData = (data) => {
@@ -176,12 +184,12 @@ const Plotly_input = () => {
           position: "fixed",
           top: "15px",
           left: "50px",
-          "min-height": "calc(100% - 10px)",
+          minHeight: "calc(100% - 10px)",
           width: "28%",
-          "overflow-y": "auto",
-          "overflow-x": "hidden",
+          overflowY: "auto",
+          overflowX: "hidden",
           border: "1px solid #DCDFE1",
-          "border-top": "none",
+          borderTop: "none",
         }}
       >
         <div style={{ margin: "74px 0px 30px 20px" }}>
@@ -190,134 +198,146 @@ const Plotly_input = () => {
               float: "right",
               position: "relative",
               right: "0%",
-              "margin-top": "-9%",
+              marginTop: "-9%",
             }}
           >
             <KeyboardDoubleArrowLeftIcon />
           </div>
-          <h2>Data</h2>
-          <TextField
-            type="file"
-            accept=".csv, .json, .xls, .xlsx"
-            onChange={(e) => handleFileUpload(e)}
-          />
+          {data === "Data" && (
+            <>
+              <h2>Data</h2>
+              <TextField
+                type="file"
+                accept=".csv, .json, .xls, .xlsx"
+                onChange={(e) => handleFileUpload(e)}
+              />{" "}
+            </>
+          )}
 
-          <Accordion
-            expanded={expanded === "panel1"}
-            onChange={handleChange("panel1")}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1bh-content"
-              id="panel1bh-header"
-            >
-              <Typography sx={{ width: "33%", flexShrink: 0 }}>
-                Charts
-              </Typography>
-              <Typography sx={{ color: "text.secondary" }}></Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>
-                <div
-                  style={{
-                    display: "flex",
-                    margin: "-10px",
-                    padding: " 0 0 25px",
-                  }}
+          {data === "Chart" && (
+            <>
+              <Accordion
+                expanded={expanded === "panel1"}
+                onChange={handleChange("panel1")}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1bh-content"
+                  id="panel1bh-header"
                 >
+                  <Typography sx={{ width: "33%", flexShrink: 0 }}>
+                    Charts
+                  </Typography>
+                  <Typography sx={{ color: "text.secondary" }}></Typography>
+                </AccordionSummary>
+                <AccordionDetails>
                   <div>
-                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                      <InputLabel id="demo-select-small-label">
-                        Chart Type
-                      </InputLabel>
-                      <Select
-                        labelId="demo-select-small-label"
-                        id="demo-select-small"
-                        value={chartType}
-                        label="chartType"
-                        onChange={(e) => setChartType(e.target.value)}
+                    <div style={{ display: "flex" }}>
+                      <FormControl
+                        sx={{ m: 1, minWidth: 120 }}
+                        size="small"
+                        style={{ width: "50%", margin: "0px" }}
                       >
-                        <MenuItem value="bar">Bar Chart</MenuItem>
-                        <MenuItem value="pie">Pie Chart</MenuItem>
-                      </Select>
-                    </FormControl>
+                        <InputLabel id="demo-select-small-label">
+                          Chart Type
+                        </InputLabel>
+                        <Select
+                          labelId="demo-select-small-label"
+                          id="demo-select-small"
+                          value={chartType}
+                          label="chartType"
+                          onChange={(e) => setChartType(e.target.value)}
+                        >
+                          <MenuItem value="bar">Bar Chart</MenuItem>
+                          <MenuItem value="pie">Pie Chart</MenuItem>
+                        </Select>
+                      </FormControl>
+                      <input
+                        type="color"
+                        id="favcolor"
+                        name="chartColor"
+                        value={chartCustomize.chartColor}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
+                    <div style={{ display: "flex" }}>
+                      <div style={{ padding: "0 7px 10px 0px" }}>
+                        <TextField
+                          label="Height"
+                          id="outlined-size-small"
+                          size="small"
+                          name="chartHeight"
+                          value={chartCustomize.chartHeight}
+                          onChange={(e) => handleChartCustomize(e)}
+                        />
+                      </div>
+                      <div>
+                        <TextField
+                          label="Width"
+                          id="outlined-size-small"
+                          size="small"
+                          name="chartWidth"
+                          value={chartCustomize.chartWidth}
+                          onChange={(e) => handleChartCustomize(e)}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <input
-                      type="color"
-                      id="favcolor"
-                      name="chartColor"
-                      value={chartCustomize.chartColor}
-                      onChange={(e) => handleChartCustomize(e)}
-                    ></input>
-                  </div>
-                </div>
-                <div style={{ display: "flex" }}>
-                  <div style={{ padding: "0 7px 10px 0px" }}>
-                    <TextField
-                      label="Height"
-                      id="outlined-size-small"
-                      size="small"
-                      name="chartHeight"
-                      value={chartCustomize.chartHeight}
-                      onChange={(e) => handleChartCustomize(e)}
-                    />
-                  </div>
-                  <div>
-                    <TextField
-                      label="Width"
-                      id="outlined-size-small"
-                      size="small"
-                      name="chartWidth"
-                      value={chartCustomize.chartWidth}
-                      onChange={(e) => handleChartCustomize(e)}
-                    />
-                  </div>
-                </div>
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
+                </AccordionDetails>
+              </Accordion>
 
-          <Accordion
-            expanded={expanded === "panel2"}
-            onChange={handleChange("panel2")}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1bh-content"
-              id="panel1bh-header"
-            >
-              <Typography sx={{ width: "33%", flexShrink: 0 }}>
-                Xaxis Labels
-              </Typography>
-              <Typography sx={{ color: "text.secondary" }}></Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>
-                <div
-                  style={{
-                    display: "flex",
-                    margin: "-10px",
-                    padding: " 0 0 25px",
-                  }}
+              <Accordion
+                expanded={expanded === "panel2"}
+                onChange={handleChange("panel2")}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1bh-content"
+                  id="panel1bh-header"
                 >
-                  <div>
-                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                      <InputLabel id="demo-select-small-label">
-                        Xaxis
-                      </InputLabel>
-                      <Select
-                        labelId="demo-select-small-label"
-                        id="demo-select-small"
-                        label="Axis"
-                        name="labels"
-                        value={chartCustomize.labels}
-                        onChange={(e, index) => handleAxisValues(e, index)}
-                      >
-                        {chartData?.["allValues"]?.[0] &&
-                        chartData["file"]?.name?.endsWith(".json")
-                          ? Object.keys(chartData["allValues"][0]).map(
-                              (option, index) => (
+                  <Typography sx={{ width: "33%", flexShrink: 0 }}>
+                    Xaxis Labels
+                  </Typography>
+                  <Typography sx={{ color: "text.secondary" }}></Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <div
+                    style={{
+                      display: "flex",
+                      margin: "-10px",
+                      padding: " 0 0 25px",
+                    }}
+                  >
+                    <div>
+                      <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                        <InputLabel id="demo-select-small-label">
+                          Xaxis
+                        </InputLabel>
+                        <Select
+                          labelId="demo-select-small-label"
+                          id="demo-select-small"
+                          label="Axis"
+                          name="labels"
+                          value={chartCustomize.labels}
+                          onChange={(e, index) => handleAxisValues(e, index)}
+                        >
+                          {chartData?.["allValues"]?.[0] &&
+                          chartData["file"]?.name?.endsWith(".json")
+                            ? Object.keys(chartData["allValues"][0]).map(
+                                (option, index) => (
+                                  <MenuItem
+                                    key={option}
+                                    index={index}
+                                    value={option}
+                                  >
+                                    <span style={{ fontFamily: option }}>
+                                      {option}
+                                    </span>
+                                  </MenuItem>
+                                )
+                              )
+                            : chartData["file"]?.name?.endsWith(".csv")
+                            ? chartData["allValues"][0].map((option, index) => (
                                 <MenuItem
                                   key={option}
                                   index={index}
@@ -327,133 +347,133 @@ const Plotly_input = () => {
                                     {option}
                                   </span>
                                 </MenuItem>
-                              )
-                            )
-                          : chartData["file"]?.name?.endsWith(".csv")
-                          ? chartData["allValues"][0].map((option, index) => (
-                              <MenuItem
-                                key={option}
-                                index={index}
-                                value={option}
-                              >
-                                <span style={{ fontFamily: option }}>
-                                  {option}
-                                </span>
-                              </MenuItem>
-                            ))
-                          : null}
-                      </Select>
-                    </FormControl>
-                  </div>
-                  <div>
-                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                      <InputLabel id="demo-select-small-label">
-                        Font Family
-                      </InputLabel>
-                      <Select
-                        labelId="demo-select-small-label"
-                        id="demo-select-small"
-                        label="Font Family"
-                        name="xaxisFontFamily"
-                        value={chartCustomize.xaxisFontFamily}
+                              ))
+                            : null}
+                        </Select>
+                      </FormControl>
+                    </div>
+                    <div>
+                      <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                        <InputLabel id="demo-select-small-label">
+                          Font Family
+                        </InputLabel>
+                        <Select
+                          labelId="demo-select-small-label"
+                          id="demo-select-small"
+                          label="Font Family"
+                          name="xaxisFontFamily"
+                          value={chartCustomize.xaxisFontFamily}
+                          onChange={(e) => handleChartCustomize(e)}
+                        >
+                          {Fonts.map((option, index) => (
+                            <MenuItem key={option} value={option}>
+                              <span style={{ fontFamily: option }}>
+                                {option}
+                              </span>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+                    <div>
+                      <input
+                        type="color"
+                        id="favcolor"
+                        name="xaxisColor"
+                        value={chartCustomize.xaxisColor}
                         onChange={(e) => handleChartCustomize(e)}
-                      >
-                        {Fonts.map((option, index) => (
-                          <MenuItem key={option} value={option}>
-                            <span style={{ fontFamily: option }}>{option}</span>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                      ></input>
+                    </div>
                   </div>
-                  <div>
-                    <input
-                      type="color"
-                      id="favcolor"
-                      name="xaxisColor"
-                      value={chartCustomize.xaxisColor}
-                      onChange={(e) => handleChartCustomize(e)}
-                    ></input>
-                  </div>
-                </div>
-                <div style={{ display: "flex" }}>
-                  <div style={{ padding: "0 7px 10px 0px" }}>
-                    <TextField
-                      label="Radius"
-                      id="outlined-size-small"
-                      size="small"
-                      name="xaxisRadious"
-                      value={chartCustomize.xaxisRadious}
-                      onChange={(e) => handleChartCustomize(e)}
-                    />
-                  </div>
+                  <div style={{ display: "flex" }}>
+                    <div style={{ padding: "0 7px 10px 0px" }}>
+                      <TextField
+                        label="Radius"
+                        id="outlined-size-small"
+                        size="small"
+                        name="xaxisRadious"
+                        value={chartCustomize.xaxisRadious}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
 
-                  <div style={{ padding: "0 7px 10px 0px" }}>
-                    <TextField
-                      label="Font Size"
-                      id="outlined-size-small"
-                      size="small"
-                      name="xaxisFontSize"
-                      value={chartCustomize.xaxisFontSize}
-                      onChange={(e) => handleChartCustomize(e)}
-                    />
-                  </div>
+                    <div style={{ padding: "0 7px 10px 0px" }}>
+                      <TextField
+                        label="Font Size"
+                        id="outlined-size-small"
+                        size="small"
+                        name="xaxisFontSize"
+                        value={chartCustomize.xaxisFontSize}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
 
-                  <div>
-                    <TextField
-                      label="XaxisTittle"
-                      id="outlined-size-small"
-                      size="small"
-                      name="xaxisTitle"
-                      value={chartCustomize.xaxisTitle}
-                      onChange={(e) => handleChartCustomize(e)}
-                    />
+                    <div>
+                      <TextField
+                        label="XaxisTittle"
+                        id="outlined-size-small"
+                        size="small"
+                        name="xaxisTitle"
+                        value={chartCustomize.xaxisTitle}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
                   </div>
-                </div>
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
+                </AccordionDetails>
+              </Accordion>
 
-          <Accordion
-            expanded={expanded === "panel3"}
-            onChange={handleChange("panel3")}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1bh-content"
-              id="panel1bh-header"
-            >
-              <Typography sx={{ width: "33%", flexShrink: 0 }}>
-                Yaxis Labels
-              </Typography>
-              <Typography sx={{ color: "text.secondary" }}></Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>
-                <div
-                  style={{
-                    display: "flex",
-                    margin: "-10px",
-                    padding: " 0 0 25px",
-                  }}
+              <Accordion
+                expanded={expanded === "panel3"}
+                onChange={handleChange("panel3")}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1bh-content"
+                  id="panel1bh-header"
                 >
-                  <div>
-                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                      <InputLabel id="demo-select-small-label">
-                        Yaxis
-                      </InputLabel>
-                      <Select
-                        labelId="demo-select-small-label"
-                        id="demo-select-small"
-                        label="Axis"
-                        name="values"
-                        value={chartCustomize.values}
-                        onChange={(e, index) => handleAxisValues(e, index)}
-                      >
-                        {chartData?.["allValues"]?.[0] &&
-                        chartData["file"]?.name?.endsWith(".json")
-                          ? Object.keys(chartData["allValues"][0]).map(
-                              (option, index) => (
+                  <Typography sx={{ width: "33%", flexShrink: 0 }}>
+                    Yaxis Labels
+                  </Typography>
+                  <Typography sx={{ color: "text.secondary" }}></Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <div
+                    style={{
+                      display: "flex",
+                      margin: "-10px",
+                      padding: " 0 0 25px",
+                    }}
+                  >
+                    <div>
+                      <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                        <InputLabel id="demo-select-small-label">
+                          Yaxis
+                        </InputLabel>
+                        <Select
+                          labelId="demo-select-small-label"
+                          id="demo-select-small"
+                          label="Axis"
+                          name="values"
+                          value={chartCustomize.values}
+                          onChange={(e, index) => handleAxisValues(e, index)}
+                        >
+                          {chartData?.["allValues"]?.[0] &&
+                          chartData["file"]?.name?.endsWith(".json")
+                            ? Object.keys(chartData["allValues"][0]).map(
+                                (option, index) => (
+                                  <MenuItem
+                                    key={option}
+                                    index={index}
+                                    value={option}
+                                  >
+                                    <span style={{ fontFamily: option }}>
+                                      {option}
+                                    </span>
+                                  </MenuItem>
+                                )
+                              )
+                            : chartData["file"]?.name?.endsWith(".csv")
+                            ? chartData["allValues"][0].map((option, index) => (
                                 <MenuItem
                                   key={option}
                                   index={index}
@@ -463,131 +483,129 @@ const Plotly_input = () => {
                                     {option}
                                   </span>
                                 </MenuItem>
-                              )
-                            )
-                          : chartData["file"]?.name?.endsWith(".csv")
-                          ? chartData["allValues"][0].map((option, index) => (
-                              <MenuItem
-                                key={option}
-                                index={index}
-                                value={option}
-                              >
-                                <span style={{ fontFamily: option }}>
-                                  {option}
-                                </span>
-                              </MenuItem>
-                            ))
-                          : ""}
-                      </Select>
-                    </FormControl>
-                  </div>
+                              ))
+                            : ""}
+                        </Select>
+                      </FormControl>
+                    </div>
 
-                  <div>
-                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                      <InputLabel id="demo-select-small-label">
-                        Font Family
-                      </InputLabel>
-                      <Select
-                        labelId="demo-select-small-label"
-                        id="demo-select-small"
-                        label="Font Family"
-                        name="yaxisFontFamily"
-                        value={chartCustomize.yaxisFontFamily}
+                    <div>
+                      <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                        <InputLabel id="demo-select-small-label">
+                          Font Family
+                        </InputLabel>
+                        <Select
+                          labelId="demo-select-small-label"
+                          id="demo-select-small"
+                          label="Font Family"
+                          name="yaxisFontFamily"
+                          value={chartCustomize.yaxisFontFamily}
+                          onChange={(e) => handleChartCustomize(e)}
+                        >
+                          {Fonts.map((option, index) => (
+                            <MenuItem key={option} value={option}>
+                              <span style={{ fontFamily: option }}>
+                                {option}
+                              </span>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+                    <div>
+                      <input
+                        type="color"
+                        id="favcolor"
+                        name="yaxisColor"
+                        value={chartCustomize.yaxisColor}
                         onChange={(e) => handleChartCustomize(e)}
-                      >
-                        {Fonts.map((option, index) => (
-                          <MenuItem key={option} value={option}>
-                            <span style={{ fontFamily: option }}>{option}</span>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                      ></input>
+                    </div>
                   </div>
-                  <div>
-                    <input
-                      type="color"
-                      id="favcolor"
-                      name="yaxisColor"
-                      value={chartCustomize.yaxisColor}
-                      onChange={(e) => handleChartCustomize(e)}
-                    ></input>
-                  </div>
-                </div>
-                <div style={{ display: "flex" }}>
-                  <div style={{ padding: "0 7px 10px 0px" }}>
-                    <TextField
-                      label="Radius"
-                      id="outlined-size-small"
-                      // defaultValue="12"
-                      size="small"
-                      name="yaxisRadious"
-                      value={chartCustomize.yaxisRadious}
-                      onChange={(e) => handleChartCustomize(e)}
-                    />
-                  </div>
+                  <div style={{ display: "flex" }}>
+                    <div style={{ padding: "0 7px 10px 0px" }}>
+                      <TextField
+                        label="Radius"
+                        id="outlined-size-small"
+                        // defaultValue="12"
+                        size="small"
+                        name="yaxisRadious"
+                        value={chartCustomize.yaxisRadious}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
 
-                  <div style={{ padding: "0 7px 10px 0px" }}>
-                    <TextField
-                      label="Font Size"
-                      id="outlined-size-small"
-                      // defaultValue="12"
-                      size="small"
-                      name="yaxisFontSize"
-                      value={chartCustomize.yaxisFontSize}
-                      onChange={(e) => handleChartCustomize(e)}
-                    />
+                    <div style={{ padding: "0 7px 10px 0px" }}>
+                      <TextField
+                        label="Font Size"
+                        id="outlined-size-small"
+                        // defaultValue="12"
+                        size="small"
+                        name="yaxisFontSize"
+                        value={chartCustomize.yaxisFontSize}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
+                    <div>
+                      <TextField
+                        label="Yaxis Tittle"
+                        id="outlined-size-small"
+                        size="small"
+                        name="yaxisTitle"
+                        value={chartCustomize.yaxisTitle}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <TextField
-                      label="Yaxis Tittle"
-                      id="outlined-size-small"
-                      size="small"
-                      name="yaxisTitle"
-                      value={chartCustomize.yaxisTitle}
-                      onChange={(e) => handleChartCustomize(e)}
-                    />
-                  </div>
-                </div>
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
+                </AccordionDetails>
+              </Accordion>
 
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleShowChart}
-            style={{ margin: "20px", float: "right" }}
-          >
-            Generate Chart
-          </Button>
-          {/* <Button
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleShowChart}
+                style={{ margin: "20px", float: "right" }}
+              >
+                Generate Chart
+              </Button>
+            </>
+          )}
+
+          {data === "Data" && (
+            <Button
               variant="contained"
               color="primary"
-              onClick={handleShowChart}
-            >
-              Show Chart
-            </Button>{" "} */}
-          {/* <Button
-              variant="contained"
-              color="secondary"
               onClick={handleShowTable}
+              style={{ margin: "20px 85px 10px 20px;", float: "right" }}
             >
               Show Table
-            </Button> */}
+            </Button>
+          )}
         </div>
       </div>
+
       <div
         style={{
           position: "absolute",
-          top: "0%",
+          top: "1%",
           height: "100%",
-          "max-height": "100%",
-          left: "35%",
-          right: 0,
+          maxHeight: "100%",
+          left: "34%",
+          right: '5px',
           padding: "50px 0 0 0",
         }}
       >
         {showChart && (
+          <PlotlyChild
+            chartData={chartData}
+            chartCustomize={chartCustomize}
+            chartType={chartType}
+            showTable={showTable}
+            showChart={showChart}
+          />
+        )}
+
+        {showTable && (
           <PlotlyChild
             chartData={chartData}
             chartCustomize={chartCustomize}
