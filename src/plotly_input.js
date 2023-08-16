@@ -32,7 +32,7 @@ import "./PlotlyInput.css";
 
 // template save icon
 import FolderSpecialIcon from "@mui/icons-material/FolderSpecial";
-import LeaderboardTwoToneIcon from '@mui/icons-material/LeaderboardTwoTone';
+import LeaderboardTwoToneIcon from "@mui/icons-material/LeaderboardTwoTone";
 
 //Axios for data sharing to server
 import axios from "axios";
@@ -167,7 +167,7 @@ const Plotly_input = ({ data, onChartUpdate }) => {
           allValues: jsonData,
           labels: labels, //Object.keys(jsonData),
           values: values, //Object.values(jsonData),
-          file: {name : file.name},
+          file: { name: file.name },
         });
 
         console.log(" json ===> ", chartData);
@@ -180,7 +180,7 @@ const Plotly_input = ({ data, onChartUpdate }) => {
               allValues: result.data,
               labels: labels,
               values: values,
-              file: {name : file.name},
+              file: { name: file.name },
             });
           },
         });
@@ -199,7 +199,7 @@ const Plotly_input = ({ data, onChartUpdate }) => {
           allValues: rows,
           labels: labels,
           values: values,
-          file: {name : file.name},
+          file: { name: file.name },
         });
         console.log(" xlsx ===> ", chartData);
       }
@@ -235,12 +235,12 @@ const Plotly_input = ({ data, onChartUpdate }) => {
     });
   };
 
-  const displayChart = (index) =>{
-    console.log('index  ==> ', templateData[index])
-    setChartData(templateData[index]['chartData'])
-    setChartCustomize(templateData[index]?.['chartLayout'])
+  const displayChart = (index) => {
+    console.log("index  ==> ", templateData[index]);
+    setChartData(templateData[index]["chartData"]);
+    setChartCustomize(templateData[index]?.["chartLayout"]);
     handleShowChart();
-  }
+  };
 
   return (
     <>
@@ -944,7 +944,6 @@ const Plotly_input = ({ data, onChartUpdate }) => {
                     <div className="col-lg-12 container-template">
                       {templateData?.map((template, index) => (
                         <div
-
                           onClick={() => displayChart(index)}
                           key={index}
                           style={{
@@ -953,27 +952,26 @@ const Plotly_input = ({ data, onChartUpdate }) => {
                             borderBottom: "1px solid #DCDFE1",
                             borderTop: "1px solid #DCDFE1",
                             // margin: "5px 0px 0px 35px",
-                            display : 'flex'
+                            display: "flex",
                           }}
                         >
-                          <div style={{width: '15%'}}>
+                          <div style={{ width: "15%" }}>
                             <LeaderboardTwoToneIcon />
                           </div>
                           <div>
-
-                          <div className="col-lg-12 container-description">
-                            <div className="row col-sm-11 col-md-11 col-lg-11">
-                              <div>{template.chartLayout.templateName}</div>
-                            </div>
-                          </div>
-
-                          <div className="col-lg-12 container-description">
-                            <div className="row col-sm-11 col-md-11 col-lg-11">
-                              <div>
-                                {template.chartLayout.templateDescription}
+                            <div className="col-lg-12 container-description">
+                              <div className="row col-sm-11 col-md-11 col-lg-11">
+                                <div>{template.chartLayout.templateName}</div>
                               </div>
                             </div>
-                          </div>
+
+                            <div className="col-lg-12 container-description">
+                              <div className="row col-sm-11 col-md-11 col-lg-11">
+                                <div>
+                                  {template.chartLayout.templateDescription}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1002,9 +1000,7 @@ const Plotly_input = ({ data, onChartUpdate }) => {
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <div>
-                    Need to implement !!
-                  </div>
+                  <div>Need to implement !!</div>
                 </AccordionDetails>
               </Accordion>
             </>
