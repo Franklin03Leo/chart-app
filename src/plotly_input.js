@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Accordion from "@mui/material/Accordion";
@@ -24,13 +24,68 @@ import * as XLSX from "xlsx";
 //import child chart component
 import PlotlyChild from "./Component/PlotlyChild";
 
+//antd dialog
+import { Modal } from "antd";
+
+//import an css file
+import "./PlotlyInput.css";
+
+// template save icon
+import FolderSpecialIcon from "@mui/icons-material/FolderSpecial";
+import LeaderboardTwoToneIcon from '@mui/icons-material/LeaderboardTwoTone';
+
+//Axios for data sharing to server
+import axios from "axios";
+
 const Plotly_input = ({ data, onChartUpdate }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [templateData, setTemplateData] = useState();
+
+  useEffect(() => {
+    if (data === "Template") {
+      (async () => {
+        try {
+          const response = await axios.get(
+            "http://localhost:3008/api/chartData"
+          );
+          setTemplateData(response.data?.["chart"]);
+          console.log("retrieved data ==> 200 ", response.data?.["chart"]);
+        } catch (error) {
+          console.error("Error fetching company names:", error);
+        }
+      })();
+    }
+  }, [data]);
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = async () => {
+    setIsModalOpen(false);
+    let obj = {
+      chartLayout: chartCustomize,
+      chartData: chartData,
+    };
+    try {
+      // Send the data to the server using axios POST request
+      const response = await axios.post("http://localhost:3008/api/data", obj);
+      console.log("Server response:", response.data);
+    } catch (error) {
+      console.error("Error sending data:", error);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
   const [showChart, setShowChart] = useState(false);
   const [chartData, setChartData] = useState({
     allValues: [],
     labels: [],
     values: [],
-    file: "",
+    file: {},
   });
   const Fonts = [
     "Arial",
@@ -63,6 +118,10 @@ const Plotly_input = ({ data, onChartUpdate }) => {
     yaxisFontSize: "12",
     yaxisTitle: "yaxis - Tittle",
     values: "",
+
+    // Template Name and description
+    templateName: "",
+    templateDescription: "",
   });
   const [expanded, setExpanded] = React.useState(false);
   const [chartType, setChartType] = useState("bar"); // Added chartType and setChartType
@@ -108,8 +167,9 @@ const Plotly_input = ({ data, onChartUpdate }) => {
           allValues: jsonData,
           labels: labels, //Object.keys(jsonData),
           values: values, //Object.values(jsonData),
-          file: file,
+          file: {name : file.name},
         });
+
         console.log(" json ===> ", chartData);
       } else if (file.name.endsWith(".csv")) {
         parse(fileContents, {
@@ -120,10 +180,11 @@ const Plotly_input = ({ data, onChartUpdate }) => {
               allValues: result.data,
               labels: labels,
               values: values,
-              file: file,
+              file: {name : file.name},
             });
           },
         });
+        console.log(" csv ===> ", file);
         console.log(" csv ===> ", chartData);
       } else if (file.name.endsWith(".xls") || file.name.endsWith(".xlsx")) {
         debugger;
@@ -138,7 +199,7 @@ const Plotly_input = ({ data, onChartUpdate }) => {
           allValues: rows,
           labels: labels,
           values: values,
-          file: file,
+          file: {name : file.name},
         });
         console.log(" xlsx ===> ", chartData);
       }
@@ -146,6 +207,10 @@ const Plotly_input = ({ data, onChartUpdate }) => {
     };
     reader.readAsText(file);
   };
+
+  useEffect(() => {
+    console.log(" csv ===> 33 ", chartData);
+  }, [chartData]);
 
   const handleAxisValues = (e, index) => {
     if (chartData["file"]?.name?.endsWith(".json")) {
@@ -169,6 +234,13 @@ const Plotly_input = ({ data, onChartUpdate }) => {
       [e.target.name]: e.target.value,
     });
   };
+
+  const displayChart = (index) =>{
+    console.log('index  ==> ', templateData[index])
+    setChartData(templateData[index]['chartData'])
+    setChartCustomize(templateData[index]?.['chartLayout'])
+    handleShowChart();
+  }
 
   return (
     <>
@@ -197,6 +269,7 @@ const Plotly_input = ({ data, onChartUpdate }) => {
           >
             <KeyboardDoubleArrowLeftIcon />
           </div>
+
           {data === "Data" && (
             <>
               <h2>Data</h2>
@@ -205,6 +278,14 @@ const Plotly_input = ({ data, onChartUpdate }) => {
                 accept=".csv, .json, .xls, .xlsx"
                 onChange={(e) => handleFileUpload(e)}
               />{" "}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleShowTable}
+                style={{ margin: "20px 85px 10px 20px", float: "right" }}
+              >
+                Show Table
+              </Button>
             </>
           )}
 
@@ -453,7 +534,7 @@ const Plotly_input = ({ data, onChartUpdate }) => {
                         >
                           {chartData?.["allValues"]?.[0] &&
                           chartData["file"]?.name?.endsWith(".json")
-                            ? Object.keys(chartData["allValues"][0]).map(
+                            ? Object.keys(chartData["allValues"][0])?.map(
                                 (option, index) => (
                                   <MenuItem
                                     key={option}
@@ -552,26 +633,381 @@ const Plotly_input = ({ data, onChartUpdate }) => {
                 </AccordionDetails>
               </Accordion>
 
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleShowChart}
-                style={{ margin: "20px", float: "right" }}
+              {/* Chart Title */}
+              <Accordion
+                expanded={expanded === "panel4"}
+                onChange={handleChange("panel4")}
               >
-                Generate Chart
-              </Button>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1bh-content"
+                  id="panel1bh-header"
+                >
+                  <Typography sx={{ width: "33%", flexShrink: 0 }}>
+                    Title
+                  </Typography>
+                  <Typography sx={{ color: "text.secondary" }}></Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <div
+                    style={{
+                      display: "flex",
+                      margin: "-10px",
+                    }}
+                  >
+                    <div>
+                      <TextField
+                        label="Title"
+                        id="outlined-size-small"
+                        size="small"
+                        name="Title"
+                        sx={{ m: 1, minWidth: 320 }}
+                        value={chartCustomize.yaxisTitle}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
+
+                    <div style={{ paddingTop: "10px" }}>
+                      <input
+                        type="color"
+                        id="favcolor"
+                        name="yaxisColor"
+                        value={chartCustomize.yaxisColor}
+                        onChange={(e) => handleChartCustomize(e)}
+                      ></input>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      margin: "-10px",
+                      padding: " 0 0 25px",
+                    }}
+                  >
+                    <div style={{ padding: "0 7px 10px 0px" }}>
+                      <FormControl sx={{ m: 1, minWidth: 220 }} size="small">
+                        <InputLabel id="demo-select-small-label">
+                          Font Family
+                        </InputLabel>
+                        <Select
+                          labelId="demo-select-small-label"
+                          id="demo-select-small"
+                          label="Font Family"
+                          name="yaxisFontFamily"
+                          value={chartCustomize.yaxisFontFamily}
+                          onChange={(e) => handleChartCustomize(e)}
+                        >
+                          {Fonts.map((option, index) => (
+                            <MenuItem key={option} value={option}>
+                              <span style={{ fontFamily: option }}>
+                                {option}
+                              </span>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+
+                    <div style={{ paddingTop: "10px" }}>
+                      <TextField
+                        label="Font Size"
+                        id="outlined-size-small"
+                        size="small"
+                        name="yaxisFontSize"
+                        value={chartCustomize.yaxisFontSize}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
+                  </div>
+                </AccordionDetails>
+              </Accordion>
+
+              {/* Chart ToolTip */}
+              <Accordion
+                expanded={expanded === "panel5"}
+                onChange={handleChange("panel5")}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1bh-content"
+                  id="panel1bh-header"
+                >
+                  <Typography sx={{ width: "33%", flexShrink: 0 }}>
+                    ToolTip
+                  </Typography>
+                  <Typography sx={{ color: "text.secondary" }}></Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <div
+                    style={{
+                      display: "flex",
+                      margin: "-10px",
+                    }}
+                  >
+                    <div>
+                      <TextField
+                        label="Title"
+                        id="outlined-size-small"
+                        size="small"
+                        name="Title"
+                        sx={{ m: 1, minWidth: 320 }}
+                        value={chartCustomize.yaxisTitle}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
+                    <div style={{ paddingTop: "10px" }}>
+                      <input
+                        type="color"
+                        id="favcolor"
+                        name="yaxisColor"
+                        value={chartCustomize.yaxisColor}
+                        onChange={(e) => handleChartCustomize(e)}
+                      ></input>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      margin: "-10px",
+                      padding: " 0 0 25px",
+                    }}
+                  >
+                    <div style={{ padding: "0 7px 10px 0px" }}>
+                      <FormControl sx={{ m: 1, minWidth: 220 }} size="small">
+                        <InputLabel id="demo-select-small-label">
+                          Font Family
+                        </InputLabel>
+                        <Select
+                          labelId="demo-select-small-label"
+                          id="demo-select-small"
+                          label="Font Family"
+                          name="yaxisFontFamily"
+                          value={chartCustomize.yaxisFontFamily}
+                          onChange={(e) => handleChartCustomize(e)}
+                        >
+                          {Fonts.map((option, index) => (
+                            <MenuItem key={option} value={option}>
+                              <span style={{ fontFamily: option }}>
+                                {option}
+                              </span>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+
+                    <div style={{ paddingTop: "10px" }}>
+                      <TextField
+                        label="Font Size"
+                        id="outlined-size-small"
+                        size="small"
+                        name="yaxisFontSize"
+                        value={chartCustomize.yaxisFontSize}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      margin: "-10px",
+                      padding: " 0 0 25px",
+                    }}
+                  >
+                    <div style={{ padding: "0 7px 10px 0px" }}>
+                      Background Color
+                      <input
+                        type="color"
+                        id="favcolor"
+                        name="yaxisColor"
+                        value={chartCustomize.yaxisColor}
+                        onChange={(e) => handleChartCustomize(e)}
+                      ></input>
+                    </div>
+
+                    <div style={{ paddingTop: "10px" }}>
+                      <TextField
+                        label="Font Size"
+                        id="outlined-size-small"
+                        size="small"
+                        name="yaxisFontSize"
+                        value={chartCustomize.yaxisFontSize}
+                        onChange={(e) => handleChartCustomize(e)}
+                      />
+                    </div>
+
+                    <div style={{ padding: "0px 7px 10px 15px" }}>
+                      Font Color
+                      <input
+                        type="color"
+                        id="favcolor"
+                        name="yaxisColor"
+                        value={chartCustomize.yaxisColor}
+                        onChange={(e) => handleChartCustomize(e)}
+                      ></input>
+                    </div>
+                  </div>
+                </AccordionDetails>
+              </Accordion>
+
+              <div>
+                <div>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleShowChart}
+                    style={{ margin: "20px", float: "right" }}
+                  >
+                    Generate Chart
+                  </Button>
+                </div>
+
+                <div>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={showModal}
+                    style={{ margin: "20px", float: "right" }}
+                  >
+                    Save as Template
+                  </Button>
+                </div>
+              </div>
+
+              <Modal
+                title="Template"
+                open={isModalOpen}
+                onOk={handleOk}
+                onCancel={handleCancel}
+              >
+                <div>
+                  <TextField
+                    label="Template Name"
+                    id="outlined-size-small"
+                    size="small"
+                    name="templateName"
+                    sx={{ m: 1, minWidth: 320 }}
+                    value={chartCustomize.templateName}
+                    onChange={(e) => handleChartCustomize(e)}
+                  />
+                </div>
+                <div>
+                  <TextField
+                    label="Description"
+                    id="outlined-multiline-static"
+                    name="templateDescription"
+                    rows={4}
+                    sx={{ m: 1, minWidth: 320 }}
+                    value={chartCustomize.templateDescription}
+                    onChange={(e) => handleChartCustomize(e)}
+                  />
+                </div>
+              </Modal>
             </>
           )}
 
-          {data === "Data" && (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleShowTable}
-              style={{ margin: "20px 85px 10px 20px;", float: "right" }}
-            >
-              Show Table
-            </Button>
+          {data === "Template" && (
+            <>
+              <h2 style={{ paddingBottom: "25px" }}> Templates </h2>
+              {/* <Button
+                variant="contained"
+                color="primary"
+                style={{ float: "right" }}
+              >
+                Show Table
+              </Button> */}
+
+              <Accordion
+                expanded={expanded === "panel6"}
+                onChange={handleChange("panel6")}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1bh-content"
+                  id="panel1bh-header"
+                >
+                  <Typography sx={{ width: "100%", flexShrink: 0 }}>
+                    <div style={{ display: "flex", alignItems: "flex-start" }}>
+                      <div style={{ width: "10%" }}>
+                        <FolderSpecialIcon />
+                      </div>
+                      <div>My saved Templates ({templateData?.length})</div>
+                    </div>
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {/* style={{ display: "flex", margin: "-10px" }} */}
+                  <div className="dashboard-layout">
+                    <div className="col-lg-12 container-template">
+                      {templateData?.map((template, index) => (
+                        <div
+
+                          onClick={() => displayChart(index)}
+                          key={index}
+                          style={{
+                            padding: "10px 0px 10px 25px",
+                            background: "#FFFFFF",
+                            borderBottom: "1px solid #DCDFE1",
+                            borderTop: "1px solid #DCDFE1",
+                            // margin: "5px 0px 0px 35px",
+                            display : 'flex'
+                          }}
+                        >
+                          <div style={{width: '15%'}}>
+                            <LeaderboardTwoToneIcon />
+                          </div>
+                          <div>
+
+                          <div className="col-lg-12 container-description">
+                            <div className="row col-sm-11 col-md-11 col-lg-11">
+                              <div>{template.chartLayout.templateName}</div>
+                            </div>
+                          </div>
+
+                          <div className="col-lg-12 container-description">
+                            <div className="row col-sm-11 col-md-11 col-lg-11">
+                              <div>
+                                {template.chartLayout.templateDescription}
+                              </div>
+                            </div>
+                          </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </AccordionDetails>
+              </Accordion>
+
+              {/* Template collection */}
+              <Accordion
+                expanded={expanded === "panel7"}
+                onChange={handleChange("panel7")}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1bh-content"
+                  id="panel1bh-header"
+                >
+                  <Typography sx={{ width: "100%", flexShrink: 0 }}>
+                    <div style={{ display: "flex", alignItems: "flex-start" }}>
+                      <div style={{ width: "10%" }}>
+                        <FolderSpecialIcon />
+                      </div>
+                      <div>Template Collections (5)</div>
+                    </div>
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <div>
+                    Need to implement !!
+                  </div>
+                </AccordionDetails>
+              </Accordion>
+            </>
           )}
         </div>
       </div>

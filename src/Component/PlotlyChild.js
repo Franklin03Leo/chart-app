@@ -15,12 +15,14 @@ const PlotlyChild = ({
   showChart,
 }) => {
 
+
   const [chartDataValues , setChartDataValues] = useState({
     data : [],
     layout : {}
   })
 
   const updateChartData = () => {
+    console.log('chart values are called !!!!' , chartCustomize)
     if (chartData) {
       var trace1;
       if (chartType === "bar") {
@@ -110,7 +112,7 @@ const PlotlyChild = ({
     <div>
       {/* {showChart && <div id="myDiv"></div>} */}
 
-      {showChart && <Plot data={chartDataValues.data} layout={chartDataValues.layout} />}
+      {showChart && <Plot data={chartDataValues?.data} layout={chartDataValues?.layout} />}
 
       {showTable && <div style={{ height: "calc(100vh - 165px)" }}>
         <MUIDataTable
